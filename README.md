@@ -1,10 +1,8 @@
 # worker-grid
 
-## Live view
+## Live preview
 
-```
-[https://ww-grid.bioworks.ru/](https://ww-grid.bioworks.ru/).
-```
+[https://ww-grid.bioworks.ru/](https://ww-grid.bioworks.ru/)
 
 ## Project setup
 
