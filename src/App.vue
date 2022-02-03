@@ -156,11 +156,25 @@ export default {
       this.terminate();
       this.status.text = message;
     },
+    clear() {
+      this.terminate();
+      const deleteRequest = indexedDB.deleteDatabase("idb-wwgrid");
+      deleteRequest.onerror = () => {
+        this.error(deleteRequest.error);
+      };
+      deleteRequest.onblocked = () => {
+        this.status.text = "DB blocked, will be cleared after closing.";
+      };
+      deleteRequest.onsuccess = () => {
+        this.status.text = "Cleared.";
+      };
+    },
     terminate() {
-     this.status.readyRowsCount = 0;this.gridApi.purgeInfiniteCache();
+      this.status.readyRowsCount = 0;
+      this.gridApi.purgeInfiniteCache();
       if (this.workers.length > 0) {
         this.status.text = "Terminated.";
-        this.status.type = "exception";        
+        this.status.type = "exception";
         this.workers.forEach((worker) => {
           worker.terminate();
         });
@@ -179,54 +193,54 @@ export default {
 
 <template>
   <el-container direction="vertical" style="height: 100vh; padding: 8px">
+    <el-drawer v-model="drawer" title="Settings" direction="ltr" size="400px">
+      <el-form label-position="right" label-width="150px" size="mini">
+        <el-form-item label="Columns:">
+          <el-input-number
+            v-model="settings.columnsCount"
+            :min="1000"
+            :step="500"
+            step-strictly
+            controls-position="right"
+          />
+        </el-form-item>
+        <el-form-item label="Rows:">
+          <el-input-number
+            v-model="settings.rowsCount"
+            :min="1000"
+            :step="500"
+            step-strictly
+            controls-position="right"
+          />
+        </el-form-item>
+        <el-form-item label="Min random value:">
+          <el-input-number
+            v-model="settings.minRandomValue"
+            :step="10"
+            controls-position="right"
+          />
+        </el-form-item>
+        <el-form-item label="Max random value:">
+          <el-input-number
+            v-model="settings.maxRandomValue"
+            :step="10"
+            controls-position="right"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="drawer = false" size="large"
+            >Ok</el-button
+          >
+        </el-form-item>
+      </el-form>
+    </el-drawer>
     <el-header>
-      <el-drawer v-model="drawer" title="Settings" direction="ltr">
-        <el-form label-position="right" label-width="150px" size="mini">
-          <el-form-item label="Columns:">
-            <el-input-number
-              v-model="settings.columnsCount"
-              :min="1000"
-              :step="500"
-              step-strictly
-              controls-position="right"
-            />
-          </el-form-item>
-          <el-form-item label="Rows:">
-            <el-input-number
-              v-model="settings.rowsCount"
-              :min="1000"
-              :step="500"
-              step-strictly
-              controls-position="right"
-            />
-          </el-form-item>
-          <el-form-item label="Min random value:">
-            <el-input-number
-              v-model="settings.minRandomValue"
-              :step="10"
-              controls-position="right"
-            />
-          </el-form-item>
-          <el-form-item label="Max random value:">
-            <el-input-number
-              v-model="settings.maxRandomValue"
-              :step="10"
-              controls-position="right"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="drawer = false" size="large"
-              >Ok</el-button
-            >
-          </el-form-item>
-        </el-form>
-      </el-drawer>
-
       <el-button type="primary" @click="drawer = true">Settings</el-button>
       <el-button type="primary" @click="run">Run</el-button>
       <el-button type="primary" @click="terminate">Terminate</el-button>
+      <el-button type="primary" @click="clear">Clear DB</el-button>
       <el-divider direction="vertical"></el-divider>
-      <span>{{ this.status.text }}</span>
+      <span class="status">{{ this.status.text }}</span>
 
       <el-progress
         :percentage="status.progress"
@@ -261,5 +275,9 @@ body {
 
 .el-progress {
   padding-top: 10px;
+}
+
+.status {
+  white-space: nowrap;
 }
 </style>
